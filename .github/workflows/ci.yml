@@ -68,9 +68,20 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
-          registry-url: "https://registry.npmjs.org"
+          # Node 24 LTS ships npm 11.x natively. Trusted publishing (OIDC)
+          # requires npm >= 11.5.1. Bumping the node version here is the
+          # cleanest path — corepack on Node 22 downloads npm 11.x but its
+          # shim is shadowed by setup-node's pinned binary, so `npm` keeps
+          # resolving to 10.x and OIDC never engages. registry-url is
+          # intentionally omitted: setting it writes an .npmrc with an
+          # empty NODE_AUTH_TOKEN placeholder that overrides OIDC auth.
+          node-version: "24"
           cache: "npm"
+
+      - name: Verify npm >= 11.5.1
+        run: |
+          npm --version
+          node -e "const v=require('child_process').execSync('npm --version').toString().trim();const [maj,min,pat]=v.split('.').map(Number);if (maj < 11 || (maj===11 && min<5) || (maj===11 && min===5 && pat<1)) { console.error('npm '+v+' is below the 11.5.1 minimum for trusted publishing'); process.exit(1); }"
 
       - name: Configure git identity
         run: |
@@ -112,10 +123,12 @@ jobs:
           git push origin "$TAG"
 
       - name: Publish to npm
+        # Trusted publishing: no NPM_TOKEN secret. The npm CLI claims the
+        # GitHub Actions OIDC token from the runner and exchanges it with
+        # npmjs.org under the trusted-publisher config bound to this repo
+        # and workflow. `id-token: write` on the job is required (set above).
         if: steps.version.outputs.changed == 'true'
         run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub release
         if: steps.version.outputs.changed == 'true'
