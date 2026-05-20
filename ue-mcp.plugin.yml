@@ -13,6 +13,13 @@ inject:
         pointsPerSquaredMeter: { type: number }
         seed:                  { type: number }
 
+    ensure_wait_for_world:
+      task: voxel.ensure_wait_for_world
+      description: "Insert a WaitForVoxelWorld node immediately upstream of beforeNode in an existing PCG graph. Idempotent — if a Wait node is already gating beforeNode, returns inserted:false. Fixes the standard PCG-on-voxel footgun: pipelines that run before the voxel runtime finishes generating produce empty/stale output. Wraps UPCGWaitForVoxelWorldSettings (VoxelPCG/Public/PCGWaitForVoxelWorld.h). Params: assetPath, beforeNode (the node to gate — typically your spawner)."
+      schema:
+        assetPath:  { type: string, required: true }
+        beforeNode: { type: string, required: true }
+
   level:
     get_voxel_world_status:
       task: voxel.get_world_status
@@ -21,14 +28,30 @@ inject:
         actorLabel: { type: string, required: true }
         world:      { type: string }
 
+    spawn_voxel_world:
+      task: voxel.spawn_world
+      description: "Drop an AVoxelWorld actor into the active level - the prerequisite for every other Voxel-Plugin operation. Wraps level.place_actor with actorClass=/Script/Voxel.VoxelWorld, then applies VoxelSize / LayerStack / MegaMaterial via level.set_actor_property. LayerStack defaults to the plugin-bundled /Voxel/Default/DefaultStack.DefaultStack so the world renders out of the box; pass empty string to opt out. Header: Voxel/Public/VoxelWorld.h. Params: label?, location? ({x,y,z}), voxelSize? (cm, default 100), layerStack? (asset path or '' to skip), megaMaterial? (asset path)."
+      schema:
+        label:        { type: string }
+        location:     { type: object }
+        voxelSize:    { type: number }
+        layerStack:   { type: string }
+        megaMaterial: { type: string }
+
 knowledge: {}
 
 tasks:
   voxel.build_scatter_graph:
     class_path: tasks/BuildScatterGraph
     description: "Build a Voxel-Sampler-driven PCG mesh scatter graph"
+  voxel.ensure_wait_for_world:
+    class_path: tasks/EnsureWaitForWorld
+    description: "Splice WaitForVoxelWorld into an existing PCG graph"
   voxel.get_world_status:
     class_path: tasks/GetWorldStatus
     description: "Snapshot AVoxelWorld lifecycle state in one call"
+  voxel.spawn_world:
+    class_path: tasks/SpawnWorld
+    description: "Spawn an AVoxelWorld actor with sane defaults"
 
 flows: {}
