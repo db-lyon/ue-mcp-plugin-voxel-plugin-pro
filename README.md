@@ -4,11 +4,11 @@
 
 ## Status
 
-**v0.2.0 ships no actions.** The previous `0.1.x` releases injected three
-placeholder actions (`voxel_scatter_meshes`, `voxel_spawn_stamps`,
-`voxel_bake_heightmap`) that called ue-mcp tasks with wrong parameter names
-and passed PCG node-type strings that do not exist. They have been removed
-rather than left as broken surface.
+**v0.1.1 ships no actions.** The `0.1.0` release injected three placeholder
+actions (`voxel_scatter_meshes`, `voxel_spawn_stamps`, `voxel_bake_heightmap`)
+that called ue-mcp tasks with wrong parameter names and passed PCG node-type
+strings that do not exist. They have been removed rather than left as broken
+surface.
 
 Real tools, grounded in the actual Voxel Plugin C++ API, are tracked in
 [`TODO.md`](TODO.md). Every entry there cites the header file and class it

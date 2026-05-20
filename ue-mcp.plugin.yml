@@ -2,7 +2,7 @@ actionPrefix: voxel
 minServerVersion: 1.0.15
 uePluginDependency: Voxel
 
-# No actions ship in this version. Prior 0.1.x releases injected three
+# No actions ship in this version. The 0.1.0 release injected three
 # placeholder actions (voxel_scatter_meshes, voxel_spawn_stamps,
 # voxel_bake_heightmap) that called ue-mcp tasks with the wrong parameter
 # names and passed fabricated PCG node-type strings - none of them worked.
